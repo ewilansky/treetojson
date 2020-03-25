@@ -11,36 +11,32 @@ namespace SerializeTest
         {
             FacetContainer fileKindFacets = new FacetContainer();
 
-            FacetNode node01 = new FacetNode
+            var facets = new List<FacetNode>()
             {
-                Key = "pdf",
-                Count = 12,
-                RawValue = "pdf",
-                Selected = false
+                new FacetNode
+                {
+                    Key = "pdf",
+                    Count = 12,
+                    RawValue = "pdf",
+                },
+                
+                new FacetNode
+                {
+                    Key = "doc(x)",
+                    Count = 10,
+                    RawValue = "doc(x)",
+                 }
             };
-            
-            FacetNode node02 = new FacetNode
-            {
-                Key = "doc(x)",
-                Count = 10,
-                RawValue = "doc(x)",
-                Selected = false
-            };
-    
-            var facets = new List<FacetNode>();
-            facets.Add(node01);
-            facets.Add(node02);
                
             FacetContainer facet01 = new FacetContainer(facets)
             {
                 DisplayOrder = 1,
-                GroupName = "group01",
                 IsTree = true,			
             };
             
             PopulateFileKindTree(facet01);
 
-            var coreSerializer = System.Text.Json.JsonSerializer.Serialize(fileKindFacets);
+            var coreSerializer = System.Text.Json.JsonSerializer.Serialize(facet01);
             var newtonSerializer = Newtonsoft.Json.JsonConvert.SerializeObject(facet01);
 
             Console.WriteLine($"With System.Text.Json:\n{coreSerializer}\n");
@@ -106,15 +102,12 @@ namespace SerializeTest
 	
 	public class FacetNode
 	{
-		public string Key { get; set; }
+	    public string Key { get; set; }
 
-       public long Count { get; set; }
+        public long Count { get; set; }
 
-       public string RawValue { get; set; }
+        public string RawValue { get; set; }
 
-       public string FacetDisplayValue { get; set; }
-
-       public bool Selected { get; set; }
 	}
 
 	public class FacetContainer
@@ -131,25 +124,7 @@ namespace SerializeTest
 	
         public int DisplayOrder { get; set; }
 
-        public string GroupName { get; set; }
-
-        public IDictionary<string, string> Settings { get; set; }
-
         public bool IsTree { get; set; }
-
-        public string TreeSelectionType { get; set; } = "ChildOnly"; 
-
-        public int ServerTotalCount { get; set; }
-
-        public int? SelectionCount { get; set; }
-
-        public bool IsLazyLoading { get; set; }
-
-        public bool IsSelectAll { get; set; }
-
-        public bool IsInvert { get; set; }
-
-        public bool DisableRemoteFiltering { get; set; }
 
         public List<FacetNode> Facets { get; set; }
     }
@@ -168,8 +143,8 @@ namespace SerializeTest
 			return all;
 		}
 		
-		public static readonly AssetType Pdf = new AssetType("PDF", "pdf", "application/pdf", new[] { "pdf" }, AssetKind.Document);
-		public static readonly AssetType Word = new AssetType("MS Word", "doc(x)", "application/msword", new[] { "doc", "dot" }, AssetKind.WordProcessor);
+		public static readonly AssetType Pdf = new AssetType("PDF", "pdf", AssetKind.Document);
+		public static readonly AssetType Word = new AssetType("MS Word", "doc(x)", AssetKind.WordProcessor);
 		
 		private static IList<AssetType> GetAllAssetTypes()
         {
@@ -180,33 +155,21 @@ namespace SerializeTest
 												 
 	public class AssetType
     {
-        public AssetType(string name, string shortName, string mimeType, string[] extensions, AssetKind kind, string[] alternativeMimeTypes = null)
+        public AssetType(string name, string shortName, AssetKind kind)
         {
             Name = name;
             ShortName = shortName;
-            MimeType = mimeType;
             Kind = kind;
-            Extensions = extensions ?? new string[0];
-            AlternativeMimeTypes = alternativeMimeTypes ?? new string[0];
         }
-
-        public string MimeType { get; }
-
-        public string[] AlternativeMimeTypes { get; } = new string[0];
-
-        public string Extension { get => Extensions?.FirstOrDefault(); }
 
         public string Name { get; }
 
         public string ShortName { get; }
 
-        public string[] Extensions { get; }
-
         public AssetKind Kind { get; }
 
     }
 
-    // [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AssetKind
     {
         Unknown,
